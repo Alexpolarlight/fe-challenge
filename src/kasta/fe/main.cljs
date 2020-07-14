@@ -3,7 +3,7 @@
 
 
 (rum/defc Root []
-  [:div "TODO (client)"])
+  [:div "TODO (client) test"])
 
 
 (defn ^:export trigger-render []
