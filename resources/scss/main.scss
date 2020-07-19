@@ -1,3 +1,28 @@
+html {
+  background: #2d2d2d;
+}
+
+h1, h2, h3, h4, p {
+  color: #cfd2d6;
+  font-family: 'Roboto', sans-serif;
+  text-transform: uppercase;
+}
+
 #content {
   text-align: center;
 }
+
+button {
+  margin-right: 10px;
+  padding: 5px 10px;
+  text-transform: uppercase;
+  border: 1px solid #cfd2d6;
+  border-radius: 3px;
+  background: #2d2d2d;
+  color: #cfd2d6;
+}
+
+table {
+  border-color: #cfd2d6;
+}
+
