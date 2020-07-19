@@ -1,15 +1,18 @@
 html {
   background: #2d2d2d;
+
 }
 
-h1, h2, h3, h4, p {
-  color: #cfd2d6;
+body {
   font-family: 'Roboto', sans-serif;
+  color: #cfd2d6;
   text-transform: uppercase;
 }
 
 #content {
+  margin: 0 auto;
   text-align: center;
+  width: 80%;
 }
 
 button {
@@ -22,7 +25,13 @@ button {
   color: #cfd2d6;
 }
 
-table {
-  border-color: #cfd2d6;
+.table {
+  width: 80%;
+  margin: 25px auto;
+  color: #cfd2d6;
+
+  thead, tbody, th, td {
+    padding: 5px 10px;
+   }
 }
 
