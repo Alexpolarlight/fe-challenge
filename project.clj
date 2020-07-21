@@ -12,8 +12,7 @@
                  [mount "0.1.16"]
                  [nrepl "0.6.0"]
                  [cljs-http "0.1.46"]
-                 [clj-time "0.15.2"]
-
+                 [com.andrewmcveigh/cljs-time "0.5.2"]
                  [org.clojure/clojurescript "1.10.520"
                   :exclusions [org.mozilla/rhino]]
                  [rum "0.11.3"]

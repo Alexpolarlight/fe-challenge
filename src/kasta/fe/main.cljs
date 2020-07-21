@@ -1,7 +1,10 @@
 (ns kasta.fe.main
   (:require [rum.core :as rum]
             [clojure.string :as string]
-            [kasta.campaigns.campaigns_networking :as campaigns]))
+            [kasta.campaigns.campaigns_networking :as campaigns]
+            [cljs-time.core :as time]
+            [cljs-time.format :as format]
+            ))
 
 (def sharesData campaigns/campaignsData)
 (def shares-state (atom sharesData))
@@ -17,7 +20,15 @@
 
   (defn isActual [key1 key2]
     (fn [m]
-      (def currentTime "2020-07-21T00:00:00.000Z")
+      (defn- getCurrentDate
+        []
+        (let [currentDateTime (time/now)]
+          (format/unparse
+           (format/formatters :date-time-no-ms)
+           currentDateTime)))
+
+      (def currentTime (getCurrentDate))
+
       (and
        (> (compare currentTime (m key1)) 0)
        (< (compare currentTime (m key2)) 0))
