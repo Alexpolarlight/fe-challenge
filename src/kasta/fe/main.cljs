@@ -3,9 +3,6 @@
             [clojure.string :as string]
             [kasta.campaigns.campaigns_networking :as campaigns]))
 
-(enable-console-print!)
-
-(println "main check   ")
 (def sharesData campaigns/campaignsData)
 (def shares-state (atom sharesData))
 (def tag-state (atom "date"))
@@ -13,23 +10,28 @@
 
 ;;; Start Filtering data
 (defn filterData
-  "Filter data by actual campaign data and tag"
+  "Filter data by actual campaign data and tag "
   [vector tag-state]
   (def tagName (str (deref tag-state)))
-
   (def sortedVector vector)
+
+  (defn isActual [key1 key2]
+    (fn [m]
+      (def currentTime "2020-07-21T00:00:00.000Z")
+      (and
+       (> (compare currentTime (m key1)) 0)
+       (< (compare currentTime (m key2)) 0))
+      ))
+
   (defn has-value [key value]
     (fn [m]
       (string/includes? (m key) value)))
 
-  (def sequence-of-maps sortedVector)
+  (def sequenceOfMaps (filter (isActual :starts_at :finishes_at) sortedVector))
   (def filtered (if (true? (identical? tagName "date"))
-    sequence-of-maps
-    (filter (has-value :tags tagName) sequence-of-maps)))
-
-
+    sequenceOfMaps
+    (filter (has-value :tags tagName) sequenceOfMaps)))
   )
-
 ;;; End Filtering data
 
 ;;; Start Table
@@ -37,7 +39,6 @@
   [data]
     (def campaigns (get (deref data) :items))
   (filterData campaigns tag-state)
-;  (println "campaigns " campaigns)
 
   (rum/defc tdProcess
   [data]
@@ -64,7 +65,6 @@
 ;; End Table
 
 ;; Start Tag Selector
-
 (rum/defc heading < rum.static [size text]
   [size text])
 
@@ -77,13 +77,11 @@
    [:button {:on-click #(reset! tag "M")} "`M` - Для мужчин"]
    [:button {:on-click #(reset! tag "C")} "`C` - Для детей"]
    [:button {:on-click #(reset! tag "H")} "`H` - Для дома"]
-   [:button {:on-click #(reset! tag "P")} "`A` или `P` - Еда и алкоголь"]
+   [:button {:on-click #(reset! tag "A")} "`A` или `P` - Еда и алкоголь"]
    [:div (shares-table shares-state)]
    ]
 )
 ;; End Tag Selector
-
-
 
 ;; Start Render
 (add-watch tag-state :render
