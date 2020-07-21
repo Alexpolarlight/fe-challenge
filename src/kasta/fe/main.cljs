@@ -1,36 +1,55 @@
 (ns kasta.fe.main
   (:require [rum.core :as rum]
             [clojure.string :as string]
-            [kasta.shares.shares_mock :as shares]))
+            [kasta.campaigns.campaigns_networking :as campaigns]))
 
 (enable-console-print!)
 
-(println "main  ")
-;(println "main Json " shares/parsedJson)
-(def sharesData shares/parsedJson)
-(def shares-state (atom sharesData
-;                          :id 121347
-;                          :name "H&M"
-;                          :description "Трендовые обновки для вашего гардероба "
-;                          :tags "FM"
-;                          :starts_at "2020-07-20T03:00:00.000Z"
-;                          :finishes_at "2020-07-21T03:00:00.000Z"
+(println "main check   ")
+(def sharesData campaigns/campaignsData)
+(def shares-state (atom sharesData))
+(def tag-state (atom "date"))
+(def tagValue (str (deref tag-state)))
 
-))
+;;; Start Filtering data
+(defn filterData
+  "Filter data by actual campaign data and tag"
+  [vector tag-state]
+  (def tagName (str (deref tag-state)))
+
+  (def sortedVector vector)
+  (defn has-value [key value]
+    (fn [m]
+      (string/includes? (m key) value)))
+
+  (def sequence-of-maps sortedVector)
+  (def filtered (if (true? (identical? tagName "date"))
+    sequence-of-maps
+    (filter (has-value :tags tagName) sequence-of-maps)))
+
+
+  )
+
+;;; End Filtering data
 
 ;;; Start Table
-;(defn filter-shares
-;  [filterstring]
-;  (filter #(re-find (->>(str filterstring)
-;                        (string/upper-case)
-;                        (re-pattern))
-;            (string/upper-case (:tags %)))
-;          @shares-state)
-;  )
-
-(rum/defc shares-table
+(rum/defc shares-table < rum.static
   [data]
-    (println "data " data)
+    (def campaigns (get (deref data) :items))
+  (filterData campaigns tag-state)
+;  (println "campaigns " campaigns)
+
+  (rum/defc tdProcess
+  [data]
+  [:tr
+   [:td (get data :name)]
+   [:td (get data :description)]
+   [:td (get data :tags)]
+   [:td (get data :starts_at)]
+   [:td (get data :finishes_at)]
+   ]
+  )
+
   [:table {:class "table"}
    [:thead
     [:tr
@@ -40,56 +59,41 @@
      [:th "Starts at"]
      [:th "Finishes at"]]]
    [:tbody
-    ;     (for [{:keys [ id
-    ;                  name
-    ;                  description
-    ;                  tags
-    ;                  starts_at
-    ;                  finishes_at
-    ;                  ]}]
-    ;       ^{:key id}
-    [:tr
-     [:td "name"]
-     [:td "description"]
-     [:td "tags"]
-     [:td "starts_at"]
-     [:td "finishes_at"]
-     ]]])
+    (mapv tdProcess filtered)
+    ]])
 ;; End Table
 
-;; Start Header
-(def state (atom "active"))
+;; Start Tag Selector
 
 (rum/defc heading < rum.static [size text]
   [size text])
 
 (rum/defc tagSelector [tag]
   [:div
-   (heading :h3 "Active shares list")
+   (heading :h3 "Active campaigns list")
    (heading :h4 "Filter tags list")
-   (heading :h4 @tag)
-   [:button {:on-click #(reset! tag "F")} "Females"]
-   [:button {:on-click #(reset! tag "M")} "Males"]
-   [:button {:on-click #(reset! tag "C")} "Kids"]
-   [:button {:on-click #(reset! tag "H")} "Home"]
-   [:button {:on-click #(reset! tag "A")} "FoodVine"]
+   [:h4 "Filter by - " @tag]
+   [:button {:on-click #(reset! tag "F")} "`F` - Для женщин"]
+   [:button {:on-click #(reset! tag "M")} "`M` - Для мужчин"]
+   [:button {:on-click #(reset! tag "C")} "`C` - Для детей"]
+   [:button {:on-click #(reset! tag "H")} "`H` - Для дома"]
+   [:button {:on-click #(reset! tag "P")} "`A` или `P` - Еда и алкоголь"]
    [:div (shares-table shares-state)]
    ]
 )
-;; End Header
+;; End Tag Selector
 
 
 
 ;; Start Render
-(add-watch state :render
+(add-watch tag-state :render
            #(rum/mount
-             (tagSelector state)
+             (tagSelector tag-state)
+
            (js/document.getElementById "content")))
 
 (rum/defc Root []
-;  (println "shares-state - " shares-state)
-;  (println "state - " state)
-  [(tagSelector state)]
+  [(tagSelector tag-state)]
   )
 
 (defn ^:export trigger-render []
