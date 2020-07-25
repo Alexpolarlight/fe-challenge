@@ -1,13 +1,15 @@
 (ns kasta.fe.main
   (:require [rum.core :as rum]
             [clojure.string :as string]
-            [kasta.campaigns.campaigns_networking :as campaigns]
+            [kasta.fe.campaigns.campaigns_networking :as campaigns]
             [cljs-time.core :as time]
             [cljs-time.format :as format]
-            ))
+            [kasta.fe.subscriptions :refer [get-init-state]]))
 
-(def sharesData campaigns/campaignsData)
-(def shares-state (atom sharesData))
+(def campaignsData campaigns/campaignsData)
+;(println "get-init-state" (deref get-init-state))
+
+(def campaigns-state (atom campaignsData))
 (def tag-state (atom "date"))
 (def tagValue (str (deref tag-state)))
 
@@ -46,14 +48,14 @@
 ;;; End Filtering data
 
 ;;; Start Table
-(rum/defc shares-table < rum.static
+(rum/defc campaigns-table
   [data]
     (def campaigns (get (deref data) :items))
   (filterData campaigns tag-state)
 
   (rum/defc tdProcess
   [data]
-  [:tr
+  [:tr { :key :id }
    [:td (get data :name)]
    [:td (get data :description)]
    [:td (get data :tags)]
@@ -89,7 +91,7 @@
    [:button {:on-click #(reset! tag "C")} "`C` - Для детей"]
    [:button {:on-click #(reset! tag "H")} "`H` - Для дома"]
    [:button {:on-click #(reset! tag "A")} "`A` или `P` - Еда и алкоголь"]
-   [:div (shares-table shares-state)]
+   [:div (campaigns-table campaigns-state)]
    ]
 )
 ;; End Tag Selector
@@ -99,12 +101,21 @@
            #(rum/mount
              (tagSelector tag-state)
 
-           (js/document.getElementById "content")))
+           (js/document.getElementById "app")))
 
-(rum/defc Root []
+(add-watch campaigns-state :render
+           #(rum/mount
+             (campaigns-table campaigns-state)
+             (tagSelector tag-state)))
+
+(rum/defc Root < rum/reactive []
+  (let [initial-state (get-init-state)])
+
+  (println "rum/defc Root" get-init-state)
+  (campaigns-table campaigns-state)
   [(tagSelector tag-state)]
   )
 
 (defn ^:export trigger-render []
-  (rum/mount (Root) (js/document.getElementById "content")))
+  (rum/mount (Root) (js/document.getElementById "app")))
 ;; End Render
